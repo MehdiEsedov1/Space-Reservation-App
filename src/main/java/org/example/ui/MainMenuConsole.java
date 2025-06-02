@@ -1,12 +1,20 @@
 package org.example.ui;
 
+import org.example.service.ReservationService;
+import org.example.service.WorkspaceService;
+
 import static org.example.ui.util.ConsoleReader.*;
 
 public class MainMenuConsole {
     private static final AdminMenuConsole adminConsole = new AdminMenuConsole();
     private static final UserMenuConsole userConsole = new UserMenuConsole();
+    private static final WorkspaceService workspaceService = new WorkspaceService();
+    private static final ReservationService reservationService = new ReservationService();
 
     public void mainMenu() {
+        workspaceService.loadFromFile();
+        reservationService.loadFromFile();
+
         System.out.println("\n== Welcome to the SPACE RESERVATION ==");
         boolean active = true;
 
