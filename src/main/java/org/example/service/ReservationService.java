@@ -2,7 +2,8 @@ package org.example.service;
 
 import org.example.entity.Interval;
 import org.example.entity.Reservation;
-
+import org.example.persistence.ReservationFileStorage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,8 @@ public class ReservationService {
 
         System.out.println("Reservation created successfully!");
         System.out.println("Reservation ID: " + reservation.getId());
+
+        saveToFile();
     }
 
     public void cancelReservation(int id) {
@@ -51,6 +54,8 @@ public class ReservationService {
 
         reservations.remove(reservation);
         System.out.println("Reservation cancelled successfully!");
+
+        saveToFile();
     }
 
     public List<Reservation> getReservationsForWorkspace(int workspaceId) {
@@ -61,5 +66,28 @@ public class ReservationService {
             }
         }
         return result;
+    }
+
+    public void loadFromFile() {
+        try {
+            List<Reservation> loaded = ReservationFileStorage.load();
+            reservations.clear();
+            reservations.addAll(loaded);
+            lastId = reservations.stream()
+                    .mapToInt(Reservation::getId)
+                    .max()
+                    .orElse(0);
+            System.out.println("Reservations loaded from file.");
+        } catch (IOException e) {
+            System.out.println("ℹNo saved reservations file found. Starting fresh.");
+        }
+    }
+
+    public void saveToFile() {
+        try {
+            ReservationFileStorage.save(reservations);
+        } catch (IOException e) {
+            System.out.println("⚠Failed to save reservations: " + e.getMessage());
+        }
     }
 }

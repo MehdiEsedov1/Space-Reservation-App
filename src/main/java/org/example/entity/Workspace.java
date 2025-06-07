@@ -1,7 +1,6 @@
 package org.example.entity;
 
 import org.example.enumtype.WorkspaceType;
-
 import java.util.Objects;
 
 public class Workspace {

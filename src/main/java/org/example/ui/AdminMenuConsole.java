@@ -68,7 +68,7 @@ public class AdminMenuConsole {
         int id = readInt("Enter workspace ID to edit (0 - Cancel): ");
         if (id == 0) return;
 
-        Workspace workspace = workspaceService.getWorkspaceById(id);
+        Workspace workspace = workspaceService.getWorkspaceByIdOrThrow(id);
         if (workspace == null) {
             System.out.println("Workspace not found!");
             return;

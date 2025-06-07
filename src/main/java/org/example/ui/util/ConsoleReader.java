@@ -6,7 +6,6 @@ public final class ConsoleReader {
     private static final Scanner scanner = new Scanner(System.in);
 
     private ConsoleReader() {
-        // Prevent instantiation
     }
 
     public static String readLine() {

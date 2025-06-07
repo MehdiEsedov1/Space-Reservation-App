@@ -31,7 +31,7 @@ public class ReservationDisplayConsole {
         System.out.printf(rowFormat, "ID", "Name", "Space Name", "Start Time", "End Time");
 
         for (Reservation reservation : reservations) {
-            Workspace workspace = workspaceService.getWorkspaceById(reservation.getSpaceId());
+            Workspace workspace = workspaceService.getWorkspaceByIdOrThrow(reservation.getSpaceId());
             String workspaceName = (workspace != null) ? workspace.getName() : "[deleted]";
 
             String startTime = dateFormat.format(reservation.getInterval().getStartTime());
