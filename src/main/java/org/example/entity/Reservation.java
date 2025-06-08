@@ -17,24 +17,18 @@ public class Reservation {
     public int getId() {
         return id;
     }
-
     public void setId(int id) {
-        // Normally should only be set once
         this.id = id;
     }
-
     public String getName() {
         return name;
     }
-
     public int getSpaceId() {
         return spaceId;
     }
-
     public Interval getInterval() {
         return interval;
     }
-
     @Override
     public String toString() {
         return "Reservation{" +
