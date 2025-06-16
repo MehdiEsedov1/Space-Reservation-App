@@ -14,10 +14,14 @@ public final class WorkspaceService {
     private static final ReservationService reservationService = new ReservationService();
     private static int lastId = 0;
 
-    public Workspace getWorkspaceByIdOrThrow(int id) {
+    public Optional<Workspace> findWorkspaceById(int id) {
         return workspaces.stream()
                 .filter(workspace -> workspace.getId() == id)
-                .findFirst()
+                .findFirst();
+    }
+
+    public Workspace getWorkspaceByIdOrThrow(int id) {
+        return findWorkspaceById(id)
                 .orElseThrow(() -> new WorkspaceNotFoundException("Workspace not found for ID: " + id));
     }
 
@@ -34,30 +38,23 @@ public final class WorkspaceService {
     }
 
     public void createWorkspace(Workspace workspace) {
-        int id = ++lastId;
-        workspace.setId(id);
+        workspace.setId(++lastId);
         workspaces.add(workspace);
-        System.out.println("Workspace created successfully!");
-        System.out.println("Workspace ID: " + id);
+        System.out.printf("Workspace created successfully!\nWorkspace ID: %d%n", workspace.getId());
         saveToFile();
     }
 
     public void editWorkspace(int id, Workspace updated) {
-        try {
-            Workspace existing = getWorkspaceByIdOrThrow(id);
+        findWorkspaceById(id).ifPresentOrElse(existing -> {
             updated.setId(id);
             workspaces.set(workspaces.indexOf(existing), updated);
             System.out.println("Workspace updated successfully!");
             saveToFile();
-        } catch (WorkspaceNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
+        }, () -> System.out.println("Workspace not found for ID: " + id));
     }
 
     public void deleteWorkspace(int id) {
-        try {
-            Workspace workspace = getWorkspaceByIdOrThrow(id);
-
+        findWorkspaceById(id).ifPresentOrElse(workspace -> {
             boolean hasFutureReservation = reservationService.getAllReservations().stream()
                     .anyMatch(reservation ->
                             reservation.getSpaceId() == id &&
@@ -71,9 +68,7 @@ public final class WorkspaceService {
             workspaces.remove(workspace);
             System.out.println("Workspace deleted successfully!");
             saveToFile();
-        } catch (WorkspaceNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
+        }, () -> System.out.println("Workspace not found for ID: " + id));
     }
 
     public boolean workspaceExists(int id) {
@@ -89,7 +84,6 @@ public final class WorkspaceService {
     public void loadFromFile() {
         try {
             List<Workspace> loaded = WorkspaceFileStorage.load();
-
             workspaces.clear();
             workspaces.addAll(loaded);
 
@@ -97,6 +91,7 @@ public final class WorkspaceService {
                     .mapToInt(Workspace::getId)
                     .max()
                     .orElse(0);
+
             System.out.println("Workspaces loaded from file.");
         } catch (IOException e) {
             System.out.println("No saved workspaces file found. Starting fresh.");
