@@ -3,21 +3,27 @@ package org.example.service;
 import org.example.entity.Interval;
 import org.example.entity.Reservation;
 import org.example.persistence.ReservationFileStorage;
+
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class ReservationService {
     private static final List<Reservation> reservations = new ArrayList<>();
     private static final WorkspaceService workspaceService = new WorkspaceService();
     private static int lastId = 0;
 
-    public Reservation getReservationById(int id) {
+    public Optional<Reservation> findReservationById(int id) {
         return reservations.stream()
                 .filter(reservation -> reservation.getId() == id)
-                .findFirst()
-                .orElse(null);
+                .findFirst();
+    }
+
+    public Reservation getReservationById(int id) {
+        return findReservationById(id).orElse(null);
     }
 
     public List<Reservation> getAllReservations() {
@@ -46,26 +52,17 @@ public class ReservationService {
     }
 
     public void cancelReservation(int id) {
-        Reservation reservation = getReservationById(id);
-        if (reservation == null) {
-            System.out.println("Reservation not found!");
-            return;
-        }
-
-        reservations.remove(reservation);
-        System.out.println("Reservation cancelled successfully!");
-
-        saveToFile();
+        findReservationById(id).ifPresentOrElse(reservation -> {
+            reservations.remove(reservation);
+            System.out.println("Reservation cancelled successfully!");
+            saveToFile();
+        }, () -> System.out.println("Reservation not found!"));
     }
 
     public List<Reservation> getReservationsForWorkspace(int workspaceId) {
-        List<Reservation> result = new ArrayList<>();
-        for (Reservation r : reservations) {
-            if (r.getSpaceId() == workspaceId) {
-                result.add(r);
-            }
-        }
-        return result;
+        return reservations.stream()
+                .filter(r -> r.getSpaceId() == workspaceId)
+                .collect(Collectors.toList());
     }
 
     public void loadFromFile() {
