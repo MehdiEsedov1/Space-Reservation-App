@@ -5,15 +5,13 @@ import org.example.entity.Workspace;
 import org.example.service.ReservationService;
 import org.example.service.WorkspaceService;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 
 public class ReservationDisplayConsole {
     private static final WorkspaceService workspaceService = new WorkspaceService();
     private static final ReservationService reservationService = new ReservationService();
-    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final String rowFormat = "%3s: %-30s %-30s %-20s %-20s%n";
 
     public void listReservations() {
@@ -34,8 +32,8 @@ public class ReservationDisplayConsole {
             Workspace workspace = workspaceService.getWorkspaceByIdOrThrow(reservation.getSpaceId());
             String workspaceName = (workspace != null) ? workspace.getName() : "[deleted]";
 
-            String startTime = dateFormat.format(reservation.getInterval().getStartTime());
-            String endTime = dateFormat.format(reservation.getInterval().getEndTime());
+            String startTime = reservation.getStartTime().format(formatter);
+            String endTime = reservation.getEndTime().format(formatter);
 
             System.out.printf(rowFormat, reservation.getId(), reservation.getName(), workspaceName, startTime, endTime);
         }

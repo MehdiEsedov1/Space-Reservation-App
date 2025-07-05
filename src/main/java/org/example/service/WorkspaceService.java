@@ -1,13 +1,12 @@
 package org.example.service;
 
-import org.example.persistence.ReservationDAO;
-import org.example.persistence.WorkspaceDAO;
-import org.example.entity.Interval;
 import org.example.entity.Reservation;
 import org.example.entity.Workspace;
 import org.example.exception.WorkspaceNotFoundException;
+import org.example.persistence.DAO.ReservationDAO;
+import org.example.persistence.DAO.WorkspaceDAO;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,23 +24,24 @@ public final class WorkspaceService {
     }
 
     public Workspace getWorkspaceByIdOrThrow(int id) {
-        return findWorkspaceById(id).orElseThrow(() -> new WorkspaceNotFoundException("Workspace not found for ID: " + id));
+        return findWorkspaceById(id)
+                .orElseThrow(() -> new WorkspaceNotFoundException("Workspace not found for ID: " + id));
     }
 
-    public List<Workspace> getAvailableWorkspaces(Interval interval) {
-        if (interval == null) return List.of();
+    public List<Workspace> getAvailableWorkspaces(LocalDateTime startTime, LocalDateTime endTime) {
+        if (startTime == null || endTime == null || !startTime.isBefore(endTime)) return List.of();
         return workspaceDAO.findAll().stream()
-                .filter(workspace -> isWorkspaceAvailable(workspace.getId(), interval))
+                .filter(workspace -> isWorkspaceAvailable(workspace.getId(), startTime, endTime))
                 .collect(Collectors.toList());
     }
 
     public void createWorkspace(Workspace workspace) {
-        workspaceDAO.saveWorkspace(workspace);
+        workspaceDAO.save(workspace);
         System.out.println("Workspace created successfully!");
     }
 
     public void editWorkspace(int id, Workspace updated) {
-        if (workspaceDAO.updateWorkspace(id, updated)) {
+        if (workspaceDAO.update(id, updated)) {
             System.out.println("Workspace updated successfully!");
         } else {
             System.out.println("Workspace not found for ID: " + id);
@@ -49,18 +49,18 @@ public final class WorkspaceService {
     }
 
     public void deleteWorkspace(int id) {
-        List<Reservation> all = reservationDAO.getAllReservations();
+        List<Reservation> all = reservationDAO.findAll();
         boolean hasFutureReservation = all.stream()
                 .anyMatch(reservation ->
                         reservation.getSpaceId() == id &&
-                                reservation.getInterval().getEndTime().after(new Date()));
+                                reservation.getEndTime().isAfter(LocalDateTime.now()));
 
         if (hasFutureReservation) {
             System.out.println("This workspace cannot be deleted because there are upcoming reservations!");
             return;
         }
 
-        if (workspaceDAO.deleteWorkspace(id)) {
+        if (workspaceDAO.delete(id)) {
             System.out.println("Workspace deleted successfully!");
         } else {
             System.out.println("Workspace not found for ID: " + id);
@@ -71,9 +71,11 @@ public final class WorkspaceService {
         return workspaceDAO.findById(id).isPresent();
     }
 
-    public boolean isWorkspaceAvailable(int id, Interval interval) {
-        return reservationDAO.getAllReservations().stream()
+    public boolean isWorkspaceAvailable(int id, LocalDateTime start, LocalDateTime end) {
+        return reservationDAO.findAll().stream()
                 .filter(r -> r.getSpaceId() == id)
-                .noneMatch(r -> Interval.isOverlap(r.getInterval(), interval));
+                .noneMatch(r ->
+                        r.getStartTime().isBefore(end) &&
+                                r.getEndTime().isAfter(start));
     }
 }

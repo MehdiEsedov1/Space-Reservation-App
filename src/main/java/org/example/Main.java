@@ -3,6 +3,7 @@ package org.example;
 import org.example.loader.CustomClassLoader;
 import org.example.plugin.MenuAction;
 import org.example.ui.MainMenuConsole;
+import org.example.persistence.JpaUtil;
 
 import java.nio.file.Path;
 
@@ -12,13 +13,13 @@ public class Main {
             CustomClassLoader loader = new CustomClassLoader(Path.of("external_plugins"));
             Class<?> clazz = loader.loadClass("ProjectStarter");
             MenuAction action = (MenuAction) clazz.getDeclaredConstructor().newInstance();
-
             action.run();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         new MainMenuConsole().mainMenu();
+
+        JpaUtil.shutdown();
     }
 }

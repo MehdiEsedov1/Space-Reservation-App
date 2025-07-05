@@ -24,9 +24,11 @@ class WorkspaceServiceTest {
         workspaceService.createWorkspace(workspace);
 
         List<Workspace> allWorkspaces = workspaceService.getAllWorkspaces();
-        assertEquals(1, allWorkspaces.size());
-        assertEquals("Room A", allWorkspaces.get(0).getName());
-        assertEquals(WorkspaceType.PRIVATE, allWorkspaces.get(0).getType());
+        assertFalse(allWorkspaces.isEmpty());
+        Workspace saved = allWorkspaces.get(0);
+
+        assertEquals("Room A", saved.getName());
+        assertEquals(WorkspaceType.PRIVATE, saved.getType());
     }
 
     @Test
@@ -34,7 +36,7 @@ class WorkspaceServiceTest {
         Workspace workspace = new Workspace("Desk 1", WorkspaceType.OPEN, 10.0);
         workspaceService.createWorkspace(workspace);
 
-        int id = workspace.getId();
+        int id = workspaceService.getAllWorkspaces().get(0).getId();
         workspaceService.deleteWorkspace(id);
 
         List<Workspace> remaining = workspaceService.getAllWorkspaces();

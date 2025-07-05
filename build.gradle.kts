@@ -23,8 +23,12 @@ dependencies {
     // JSON support
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // SQL
+    // JDBC driver
     implementation("org.postgresql:postgresql:42.7.1")
+
+    // JPA and Hibernate (without Spring)
+    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    implementation("org.hibernate.orm:hibernate-core:6.4.4.Final")
 }
 
 tasks.test {

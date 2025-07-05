@@ -3,7 +3,7 @@ package org.example.service;
 import org.example.entity.User;
 import org.example.enumtype.UserRole;
 import org.junit.jupiter.api.*;
-import org.example.persistence.UserDAO;
+import org.example.persistence.DAO.UserDAO;
 
 import java.util.Optional;
 
