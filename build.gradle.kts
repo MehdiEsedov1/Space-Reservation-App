@@ -22,6 +22,9 @@ dependencies {
 
     // JSON support
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // SQL
+    implementation("org.postgresql:postgresql:42.7.1")
 }
 
 tasks.test {
