@@ -10,54 +10,49 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class WorkspaceService {
-    private static final List<Workspace> workspaces = new ArrayList<>();
+    private static final Map<Integer, Workspace> workspacesMap = new HashMap<>();
     private static final ReservationService reservationService = new ReservationService();
     private static int lastId = 0;
 
+    public Optional<Workspace> findWorkspaceById(int id) {
+        return Optional.ofNullable(workspacesMap.get(id));
+    }
+
     public Workspace getWorkspaceByIdOrThrow(int id) {
-        return workspaces.stream()
-                .filter(workspace -> workspace.getId() == id)
-                .findFirst()
+        return Optional.ofNullable(workspacesMap.get(id))
                 .orElseThrow(() -> new WorkspaceNotFoundException("Workspace not found for ID: " + id));
     }
 
     public List<Workspace> getAllWorkspaces() {
-        return Collections.unmodifiableList(workspaces);
+        return List.copyOf(workspacesMap.values());
     }
 
     public List<Workspace> getAvailableWorkspaces(Interval interval) {
         if (interval == null) return Collections.emptyList();
 
-        return workspaces.stream()
+        return workspacesMap.values().stream()
                 .filter(workspace -> isWorkspaceAvailable(workspace.getId(), interval))
                 .collect(Collectors.toList());
     }
 
     public void createWorkspace(Workspace workspace) {
-        int id = ++lastId;
-        workspace.setId(id);
-        workspaces.add(workspace);
-        System.out.println("Workspace created successfully!");
-        System.out.println("Workspace ID: " + id);
+        workspace.setId(++lastId);
+        workspacesMap.put(workspace.getId(), workspace);
+        System.out.printf("Workspace created successfully!\nWorkspace ID: %d%n", workspace.getId());
         saveToFile();
     }
 
     public void editWorkspace(int id, Workspace updated) {
-        try {
-            Workspace existing = getWorkspaceByIdOrThrow(id);
+        findWorkspaceById(id).ifPresentOrElse(existing -> {
             updated.setId(id);
-            workspaces.set(workspaces.indexOf(existing), updated);
+            workspacesMap.put(id, updated);
             System.out.println("Workspace updated successfully!");
             saveToFile();
-        } catch (WorkspaceNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
+        }, () -> System.out.println("Workspace not found for ID: " + id));
     }
 
     public void deleteWorkspace(int id) {
-        try {
-            Workspace workspace = getWorkspaceByIdOrThrow(id);
-
+        findWorkspaceById(id).ifPresentOrElse(workspace -> {
             boolean hasFutureReservation = reservationService.getAllReservations().stream()
                     .anyMatch(reservation ->
                             reservation.getSpaceId() == id &&
@@ -68,16 +63,14 @@ public final class WorkspaceService {
                 return;
             }
 
-            workspaces.remove(workspace);
+            workspacesMap.remove(id);
             System.out.println("Workspace deleted successfully!");
             saveToFile();
-        } catch (WorkspaceNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
+        }, () -> System.out.println("Workspace not found for ID: " + id));
     }
 
     public boolean workspaceExists(int id) {
-        return workspaces.stream().anyMatch(workspace -> workspace.getId() == id);
+        return workspacesMap.containsKey(id);
     }
 
     public boolean isWorkspaceAvailable(int id, Interval interval) {
@@ -89,14 +82,14 @@ public final class WorkspaceService {
     public void loadFromFile() {
         try {
             List<Workspace> loaded = WorkspaceFileStorage.load();
+            workspacesMap.clear();
+            loaded.forEach(ws -> workspacesMap.put(ws.getId(), ws));
 
-            workspaces.clear();
-            workspaces.addAll(loaded);
-
-            lastId = workspaces.stream()
-                    .mapToInt(Workspace::getId)
+            lastId = workspacesMap.keySet().stream()
+                    .mapToInt(Integer::intValue)
                     .max()
                     .orElse(0);
+
             System.out.println("Workspaces loaded from file.");
         } catch (IOException e) {
             System.out.println("No saved workspaces file found. Starting fresh.");
@@ -105,7 +98,7 @@ public final class WorkspaceService {
 
     public void saveToFile() {
         try {
-            WorkspaceFileStorage.save(workspaces);
+            WorkspaceFileStorage.save(new ArrayList<>(workspacesMap.values()));
         } catch (IOException e) {
             System.out.println("Failed to save workspaces: " + e.getMessage());
         }
