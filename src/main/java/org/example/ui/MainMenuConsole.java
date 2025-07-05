@@ -12,9 +12,6 @@ public class MainMenuConsole {
     private static final ReservationService reservationService = new ReservationService();
 
     public void mainMenu() {
-        workspaceService.loadFromFile();
-        reservationService.loadFromFile();
-
         System.out.println("\n== Welcome to the SPACE RESERVATION ==");
         boolean active = true;
 
