@@ -1,15 +1,26 @@
 package org.example.entity;
 
+import jakarta.persistence.*;
 import org.example.enumtype.UserRole;
-import java.util.Objects;
 
+@Entity
+@Table(name = "users")
 public class User {
-    private final String username;
-    private final UserRole role;
+
+    @Id
+    @Column(length = 100)
+    private String username;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private UserRole role;
+
+    public User() {
+    }
 
     public User(String username, UserRole role) {
-        this.username = Objects.requireNonNull(username, "Username cannot be null.");
-        this.role = Objects.requireNonNull(role, "User role cannot be null.");
+        this.username = username;
+        this.role = role;
     }
 
     public String getUsername() {
@@ -18,6 +29,14 @@ public class User {
 
     public UserRole getRole() {
         return role;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
     @Override

@@ -1,10 +1,9 @@
 package org.example.service;
 
-import org.example.persistence.ReservationDAO;
-import org.example.entity.Interval;
 import org.example.entity.Reservation;
+import org.example.persistence.DAO.ReservationDAO;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -14,8 +13,8 @@ public class ReservationService {
     private final WorkspaceService workspaceService = new WorkspaceService();
 
     public Optional<Reservation> findReservationById(int id) {
-        return reservationDAO.getAllReservations().stream()
-                .filter(reservation -> reservation.getId() == id)
+        return reservationDAO.findAll().stream()
+                .filter(r -> r.getId() == id)
                 .findFirst();
     }
 
@@ -24,28 +23,28 @@ public class ReservationService {
     }
 
     public List<Reservation> getAllReservations() {
-        return Collections.unmodifiableList(reservationDAO.getAllReservations());
+        return reservationDAO.findAll();
     }
 
-    public void makeReservation(String name, int spaceId, Interval interval) {
+    public void makeReservation(String name, int spaceId, LocalDateTime startTime, LocalDateTime endTime) {
         if (!workspaceService.workspaceExists(spaceId)) {
             System.out.println("Workspace not found!");
             return;
         }
 
-        if (!workspaceService.isWorkspaceAvailable(spaceId, interval)) {
+        if (!workspaceService.isWorkspaceAvailable(spaceId, startTime, endTime)) {
             System.out.println("Workspace is not available!");
             return;
         }
 
-        Reservation reservation = new Reservation(name, spaceId, interval);
-        reservationDAO.saveReservation(reservation);
+        Reservation reservation = new Reservation(name, spaceId, startTime, endTime);
+        reservationDAO.save(reservation);
 
         System.out.println("Reservation created successfully!");
     }
 
     public List<Reservation> getReservationsForWorkspace(int workspaceId) {
-        return reservationDAO.getAllReservations().stream()
+        return reservationDAO.findAll().stream()
                 .filter(r -> r.getSpaceId() == workspaceId)
                 .collect(Collectors.toList());
     }

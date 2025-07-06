@@ -1,6 +1,6 @@
 package org.example.service;
 
-import org.example.persistence.UserDAO;
+import org.example.persistence.DAO.UserDAO;
 import org.example.entity.User;
 import org.example.enumtype.UserRole;
 

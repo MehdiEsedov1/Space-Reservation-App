@@ -1,18 +1,32 @@
 package org.example.entity;
 
+import jakarta.persistence.*;
 import org.example.enumtype.WorkspaceType;
-import java.util.Objects;
 
+@Entity
+@Table(name = "workspaces")
 public class Workspace {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
     private WorkspaceType type;
+
+    @Column(nullable = false)
     private double price;
 
+    public Workspace() {
+    }
+
     public Workspace(String name, WorkspaceType type, double price) {
-        this.name = Objects.requireNonNull(name, "Workspace name cannot be null.");
-        this.type = Objects.requireNonNull(type, "Workspace type cannot be null.");
-        if (price < 0) throw new IllegalArgumentException("Price cannot be negative.");
+        this.name = name;
+        this.type = type;
         this.price = price;
     }
 
@@ -21,8 +35,6 @@ public class Workspace {
     }
 
     public void setId(int id) {
-        if (this.id != 0)
-            throw new IllegalStateException("ID can only be set once.");
         this.id = id;
     }
 
@@ -31,7 +43,7 @@ public class Workspace {
     }
 
     public void setName(String name) {
-        this.name = Objects.requireNonNull(name, "Workspace name cannot be null.");
+        this.name = name;
     }
 
     public WorkspaceType getType() {
@@ -39,7 +51,7 @@ public class Workspace {
     }
 
     public void setType(WorkspaceType type) {
-        this.type = Objects.requireNonNull(type, "Workspace type cannot be null.");
+        this.type = type;
     }
 
     public double getPrice() {
@@ -47,7 +59,6 @@ public class Workspace {
     }
 
     public void setPrice(double price) {
-        if (price < 0) throw new IllegalArgumentException("Price cannot be negative.");
         this.price = price;
     }
 
